@@ -6,7 +6,7 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.ViewGroup;
 
-public abstract class RecyclerViewCursorAdapter<VH extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<VH> {
+abstract class RecyclerViewCursorAdapter<VH extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<VH> {
 	private static final String TAG = "RVCursorAdapter";
 
 	private final DataSetObserver dataSetObserver = new DataSetObserver() {
@@ -62,7 +62,7 @@ public abstract class RecyclerViewCursorAdapter<VH extends RecyclerView.ViewHold
 		return RecyclerView.NO_ID;
 	}
 
-	public void swapCursor(Cursor newCursor) {
+	void swapCursor(Cursor newCursor) {
 		if (newCursor == cursor) {
 			return;
 		}
