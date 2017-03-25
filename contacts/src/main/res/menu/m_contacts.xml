@@ -1,4 +1,4 @@
 <menu
 	xmlns:tools="http://schemas.android.com/tools"
-	tools:context="com.mercdev.rybakin.contacts.ContactsListActivity">
+	tools:context="com.mercdev.rybakin.contacts.list.ContactsListActivity">
 </menu>

@@ -17,6 +17,7 @@
 		android:id="@+id/contacts_list"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
+		app:layoutManager="LinearLayoutManager"
 		android:layout_below="@+id/contacts_toolbar" />
 
 	<android.support.design.widget.FloatingActionButton
