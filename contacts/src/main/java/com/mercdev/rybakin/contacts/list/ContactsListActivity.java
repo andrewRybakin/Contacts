@@ -8,17 +8,19 @@ import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.mercdev.rybakin.contacts.BaseActivity;
 import com.mercdev.rybakin.contacts.R;
+import com.mercdev.rybakin.contacts.details.DetailsActivity;
+import com.mercdev.rybakin.contacts.utils.RecyclerViewCursorAdapter;
 
-public class ContactsListActivity extends AppCompatActivity {
+public class ContactsListActivity extends BaseActivity {
+	private static final int CONTACTS_LOADER_ID = 0;
+
 	private ContactsAdapter adapter;
 
 	@Override
@@ -31,11 +33,6 @@ public class ContactsListActivity extends AppCompatActivity {
 		adapter = new ContactsAdapter();
 		((RecyclerView) findViewById(R.id.contacts_list)).setAdapter(adapter);
 
-		Bundle loaderArgs = new Bundle();
-		loaderArgs.putStringArray(ContactsLoaderCallback.PROJECTION_KEY, ContactModel.FIELDS);
-		loaderArgs.putString(ContactsLoaderCallback.SORT_ORDER_KEY, ContactModel.SORT_BY_FIELD);
-		getLoaderManager().initLoader(0, loaderArgs, new ContactsLoaderCallback());
-
 		FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.contacts_add_button);
 		fab.setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -47,14 +44,32 @@ public class ContactsListActivity extends AppCompatActivity {
 	}
 
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		getMenuInflater().inflate(R.menu.m_contacts, menu);
-		return true;
+	protected void onPermissionGranted() {
+		initContactLoader();
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		return super.onOptionsItemSelected(item);
+	protected void onPermissionDeclined() {
+		Snackbar.make(findViewById(R.id.contacts_list), R.string.no_permissions, Snackbar.LENGTH_INDEFINITE)
+				.setAction(R.string.no_permission_settings, new View.OnClickListener() {
+					@Override
+					public void onClick(View view) {
+						openPermissionsSettings();
+					}
+				}).show();
+	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		getLoaderManager().destroyLoader(CONTACTS_LOADER_ID);
+	}
+
+	private void initContactLoader() {
+		Bundle loaderArgs = new Bundle();
+		loaderArgs.putStringArray(ContactsLoaderCallback.PROJECTION_KEY, ContactModel.FIELDS);
+		loaderArgs.putString(ContactsLoaderCallback.SORT_ORDER_KEY, ContactModel.SORT_BY_FIELD);
+		getLoaderManager().initLoader(CONTACTS_LOADER_ID, loaderArgs, new ContactsLoaderCallback());
 	}
 
 	private class ContactsLoaderCallback implements LoaderManager.LoaderCallbacks<Cursor> {
@@ -65,7 +80,7 @@ public class ContactsListActivity extends AppCompatActivity {
 
 		@Override
 		public Loader<Cursor> onCreateLoader(int loaderId, Bundle args) {
-			if (loaderId == 0) {
+			if (loaderId == CONTACTS_LOADER_ID) {
 				String[] projection = args.getStringArray(PROJECTION_KEY);
 				String selection = args.getString(SELECTION_KEY);
 				String[] selectionArgs = args.getStringArray(SELECTION_ARGS_KEY);
@@ -98,18 +113,18 @@ public class ContactsListActivity extends AppCompatActivity {
 		}
 	}
 
-	private static class ContactViewHolder extends RecyclerView.ViewHolder {
+	private class ContactViewHolder extends RecyclerView.ViewHolder {
 		ContactViewHolder(View itemView) {
 			super(itemView);
 		}
 
-		void bind(ContactModel contact) {
+		void bind(final ContactModel contact) {
 			if (itemView instanceof ContactView) {
 				((ContactView) itemView).setContact(contact);
 				itemView.setOnClickListener(new View.OnClickListener() {
 					@Override
 					public void onClick(View view) {
-						// Open DetailsActivity
+						DetailsActivity.startMe(ContactsListActivity.this, contact.getId());
 					}
 				});
 			}

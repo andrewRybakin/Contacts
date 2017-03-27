@@ -11,8 +11,8 @@ import com.mercdev.rybakin.contacts.R;
 import com.squareup.picasso.Picasso;
 
 public class ContactView extends RelativeLayout {
-	private final TextView contactName;
-	private final ImageView contactImage;
+	private final TextView contactNameView;
+	private final ImageView contactPhotoView;
 
 	public ContactView(Context context) {
 		this(context, null);
@@ -25,15 +25,15 @@ public class ContactView extends RelativeLayout {
 	public ContactView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
 		inflate(getContext(), R.layout.v_contact, this);
-		contactName = (TextView) findViewById(R.id.contact_name);
-		contactImage = (ImageView) findViewById(R.id.contact_photo);
+		contactNameView = (TextView) findViewById(R.id.contact_name);
+		contactPhotoView = (ImageView) findViewById(R.id.contact_photo);
 	}
 
 	public void setContact(ContactModel contact) {
-		contactName.setText(contact.getName());
-		Picasso.with(contactImage.getContext())
+		contactNameView.setText(contact.getName());
+		Picasso.with(contactPhotoView.getContext())
 				.load(contact.getPhotoUri())
 				.placeholder(R.drawable.contact_placeholder)
-				.into(contactImage);
+				.into(contactPhotoView);
 	}
 }

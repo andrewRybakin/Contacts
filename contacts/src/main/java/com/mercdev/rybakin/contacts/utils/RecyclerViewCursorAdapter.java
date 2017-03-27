@@ -1,4 +1,4 @@
-package com.mercdev.rybakin.contacts.list;
+package com.mercdev.rybakin.contacts.utils;
 
 import android.database.Cursor;
 import android.database.DataSetObserver;
@@ -6,7 +6,7 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.ViewGroup;
 
-abstract class RecyclerViewCursorAdapter<VH extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<VH> {
+public abstract class RecyclerViewCursorAdapter<VH extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<VH> {
 	private static final String TAG = "RVCursorAdapter";
 
 	private final DataSetObserver dataSetObserver = new DataSetObserver() {
@@ -62,13 +62,14 @@ abstract class RecyclerViewCursorAdapter<VH extends RecyclerView.ViewHolder> ext
 		return RecyclerView.NO_ID;
 	}
 
-	void swapCursor(Cursor newCursor) {
+	public void swapCursor(Cursor newCursor) {
 		if (newCursor == cursor) {
 			return;
 		}
 		Cursor oldCursor = cursor;
 		if (oldCursor != null) {
 			oldCursor.unregisterDataSetObserver(dataSetObserver);
+			oldCursor.close();
 		}
 		cursor = newCursor;
 		if (cursor != null) {
