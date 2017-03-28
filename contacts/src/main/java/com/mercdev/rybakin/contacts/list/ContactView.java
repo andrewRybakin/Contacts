@@ -3,7 +3,6 @@ package com.mercdev.rybakin.contacts.list;
 import android.content.Context;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
-import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -12,7 +11,7 @@ import com.squareup.picasso.Picasso;
 
 public class ContactView extends RelativeLayout {
 	private final TextView contactNameView;
-	private final ImageView contactPhotoView;
+	private final ContactPhotoThumbnailView contactPhotoView;
 
 	public ContactView(Context context) {
 		this(context, null);
@@ -23,17 +22,22 @@ public class ContactView extends RelativeLayout {
 	}
 
 	public ContactView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
-		super(context, attrs, defStyleAttr);
+		this(context, attrs, defStyleAttr, R.style.Contacts_ContactView);
+	}
+
+	public ContactView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+		super(context, attrs, defStyleAttr, defStyleRes);
 		inflate(getContext(), R.layout.v_contact, this);
 		contactNameView = (TextView) findViewById(R.id.contact_name);
-		contactPhotoView = (ImageView) findViewById(R.id.contact_photo);
+		contactPhotoView = (ContactPhotoThumbnailView) findViewById(R.id.contact_photo);
 	}
 
 	public void setContact(ContactModel contact) {
 		contactNameView.setText(contact.getName());
 		Picasso.with(contactPhotoView.getContext())
 				.load(contact.getPhotoUri())
-				.placeholder(R.drawable.contact_placeholder)
+				.placeholder(R.drawable.contacts_placeholder)
 				.into(contactPhotoView);
+		contactPhotoView.setAssociatedColor(contact.getAssociatedColor());
 	}
 }

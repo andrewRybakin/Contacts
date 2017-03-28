@@ -99,7 +99,7 @@ public class DetailsActivity extends BaseActivity {
 		nameView.setText(model.getName());
 		Picasso.with(contactPhotoView.getContext())
 				.load(model.getPhotoUri())
-				.placeholder(R.drawable.contact_placeholder)
+				.placeholder(R.drawable.account)
 				.into(contactPhotoView);
 		if (model.isHasPhoneNumber()) {
 			initPhoneNumbersLoader();

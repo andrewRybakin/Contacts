@@ -6,7 +6,6 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.provider.ContactsContract;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -32,15 +31,6 @@ public class ContactsListActivity extends BaseActivity {
 
 		adapter = new ContactsAdapter();
 		((RecyclerView) findViewById(R.id.contacts_list)).setAdapter(adapter);
-
-		FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.contacts_add_button);
-		fab.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-						.setAction("Action", null).show();
-			}
-		});
 	}
 
 	@Override
@@ -68,7 +58,7 @@ public class ContactsListActivity extends BaseActivity {
 	private void initContactLoader() {
 		Bundle loaderArgs = new Bundle();
 		loaderArgs.putStringArray(ContactsLoaderCallback.PROJECTION_KEY, ContactModel.FIELDS);
-		loaderArgs.putString(ContactsLoaderCallback.SORT_ORDER_KEY, ContactModel.SORT_BY_FIELD);
+		loaderArgs.putString(ContactsLoaderCallback.SORT_ORDER_KEY, ContactModel.FIELD_TO_SORT_BY);
 		getLoaderManager().initLoader(CONTACTS_LOADER_ID, loaderArgs, new ContactsLoaderCallback());
 	}
 
@@ -109,7 +99,7 @@ public class ContactsListActivity extends BaseActivity {
 
 		@Override
 		protected void onBindViewHolder(ContactViewHolder holder, Cursor cursor) {
-			holder.bind(ContactModel.build(cursor));
+			holder.bind(ContactModel.build(ContactsListActivity.this, cursor));
 		}
 	}
 
