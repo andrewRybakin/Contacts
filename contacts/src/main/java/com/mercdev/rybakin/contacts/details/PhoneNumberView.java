@@ -3,13 +3,16 @@ package com.mercdev.rybakin.contacts.details;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.telephony.PhoneNumberUtils;
 import android.util.AttributeSet;
-import android.widget.RelativeLayout;
+import android.widget.FrameLayout;
 import android.widget.TextView;
+
+import java.util.Locale;
 
 import com.mercdev.rybakin.contacts.R;
 
-public class PhoneNumberView extends RelativeLayout {
+public class PhoneNumberView extends FrameLayout {
 	private final TextView phoneTypeView;
 	private final TextView phoneNumberView;
 
@@ -22,11 +25,7 @@ public class PhoneNumberView extends RelativeLayout {
 	}
 
 	public PhoneNumberView(Context context, AttributeSet attrs, int defStyleAttr) {
-		this(context, attrs, defStyleAttr, 0);
-	}
-
-	public PhoneNumberView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-		super(context, attrs, defStyleAttr, defStyleRes);
+		super(context, attrs, defStyleAttr);
 		inflate(context, R.layout.v_phone_number, this);
 
 		phoneTypeView = (TextView) findViewById(R.id.phone_number_type);
@@ -35,7 +34,7 @@ public class PhoneNumberView extends RelativeLayout {
 
 	public void setData(String phoneType, final String phoneNumber) {
 		phoneTypeView.setText(phoneType);
-		phoneNumberView.setText(phoneNumber);
+		phoneNumberView.setText(PhoneNumberUtils.formatNumber(phoneNumber, Locale.getDefault().getISO3Country()));
 		setOnClickListener(view -> {
 			Intent intent = new Intent(Intent.ACTION_DIAL);
 			intent.setData(Uri.parse("tel:" + phoneNumber));

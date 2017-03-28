@@ -3,5 +3,8 @@
 	<dimen name="photo_thumbnail_size">50dp</dimen>
 	<dimen name="content_inset_start">24dp</dimen>
 	<dimen name="content_inset_end">16dp</dimen>
+	<dimen name="recycler_content_inset">16dp</dimen>
 	<dimen name="details_appbar_height">350dp</dimen>
+	<dimen name="cardview_content_inset">16dp</dimen>
+	<dimen name="cardview_inset_shadow">4dp</dimen>
 </resources>
