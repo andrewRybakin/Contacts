@@ -1,12 +1,10 @@
 package com.mercdev.rybakin.contacts.details;
 
 import android.content.Context;
-import android.content.res.ColorStateList;
 import android.provider.ContactsContract;
 import android.support.annotation.ColorInt;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.CoordinatorLayout;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.AttributeSet;
@@ -22,8 +20,6 @@ public class ContactDetailsLayout extends CoordinatorLayout {
 
 	private final ImageView contactPhotoView;
 	private final RecyclerView phoneNumbers;
-
-	private final FloatingActionButton messageButton;
 
 	public ContactDetailsLayout(Context context) {
 		this(context, null);
@@ -43,15 +39,12 @@ public class ContactDetailsLayout extends CoordinatorLayout {
 
 		contactPhotoView = (ImageView) findViewById(R.id.details_contact_photo);
 		phoneNumbers = (RecyclerView) findViewById(R.id.details_phone_numbers);
-
-		messageButton = (FloatingActionButton) findViewById(R.id.details_messaging);
 	}
 
 	public void setAssociatedColor(@ColorInt int color) {
 		collapsing.setContentScrimColor(color);
 		collapsing.setStatusBarScrimColor(color);
 		collapsing.setBackgroundColor(color);
-		messageButton.setBackgroundTintList(ColorStateList.valueOf(color));
 	}
 
 	public void setContact(ContactDetailsModel model) {
