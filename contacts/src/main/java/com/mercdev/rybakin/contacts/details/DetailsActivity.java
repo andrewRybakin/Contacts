@@ -41,7 +41,7 @@ public class DetailsActivity extends BaseActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.a_details);
 		int associatedColor = getIntent().getIntExtra(CONTACT_ASSOCIATED_COLOR_EXTRA, getResources().getColor(R.color.colorPrimary));
-		adapter = new PhoneNumbersAdapter();
+		adapter = new PhoneNumbersAdapter(associatedColor);
 
 		getWindow().setStatusBarColor(associatedColor);
 		layout = (ContactDetailsLayout) findViewById(R.id.details_layout);
@@ -140,6 +140,12 @@ public class DetailsActivity extends BaseActivity {
 	}
 
 	private class PhoneNumbersAdapter extends RecyclerViewCursorAdapter<ContactDetailsLayout.PhoneNumberViewHolder> {
+		private final int associatedColor;
+
+		PhoneNumbersAdapter(int associatedColor) {
+			this.associatedColor = associatedColor;
+		}
+
 		@Override
 		public ContactDetailsLayout.PhoneNumberViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 			return new ContactDetailsLayout.PhoneNumberViewHolder(new PhoneNumberView(DetailsActivity.this));
@@ -147,7 +153,7 @@ public class DetailsActivity extends BaseActivity {
 
 		@Override
 		protected void onBindViewHolder(ContactDetailsLayout.PhoneNumberViewHolder holder, Cursor cursor) {
-			holder.bind(ContactDetailsModel.PhoneNumber.build(cursor));
+			holder.bind(ContactDetailsModel.PhoneNumber.build(cursor), associatedColor);
 		}
 	}
 

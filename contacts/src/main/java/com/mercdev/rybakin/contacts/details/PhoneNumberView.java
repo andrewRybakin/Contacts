@@ -2,7 +2,9 @@ package com.mercdev.rybakin.contacts.details;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.net.Uri;
+import android.support.annotation.ColorInt;
 import android.telephony.PhoneNumberUtils;
 import android.util.AttributeSet;
 import android.widget.FrameLayout;
@@ -17,6 +19,7 @@ public class PhoneNumberView extends FrameLayout {
 	private final TextView phoneTypeView;
 	private final TextView phoneNumberView;
 	private final ImageView phoneMessageView;
+	private final ImageView phoneView;
 
 	public PhoneNumberView(Context context) {
 		this(context, null);
@@ -33,6 +36,7 @@ public class PhoneNumberView extends FrameLayout {
 		phoneTypeView = (TextView) findViewById(R.id.phone_number_type);
 		phoneNumberView = (TextView) findViewById(R.id.phone_number);
 		phoneMessageView = (ImageView) findViewById(R.id.phone_message);
+		phoneView = (ImageView) findViewById(R.id.phone);
 	}
 
 	public void setData(String phoneType, final String phoneNumber) {
@@ -50,5 +54,10 @@ public class PhoneNumberView extends FrameLayout {
 			intent.setData(Uri.parse("sms:" + phoneNumber));
 			getContext().startActivity(intent);
 		});
+	}
+
+	public void setAssociatedColor(@ColorInt int color) {
+		phoneMessageView.setImageTintList(ColorStateList.valueOf(color));
+		phoneView.setImageTintList(ColorStateList.valueOf(color));
 	}
 }

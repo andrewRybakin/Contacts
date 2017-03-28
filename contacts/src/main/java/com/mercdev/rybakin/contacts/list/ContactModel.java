@@ -2,6 +2,7 @@ package com.mercdev.rybakin.contacts.list;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.provider.ContactsContract;
 import android.support.annotation.ColorInt;
@@ -13,6 +14,8 @@ class ContactModel {
 
 	static final String FIELD_TO_SORT_BY = ContactsContract.Contacts.DISPLAY_NAME;
 
+	private static final int NO_COLOR = Color.TRANSPARENT;
+
 	private static final int ID_COLUMN_POSITION = 0;
 	private static final int NAME_COLUMN_POSITION = 1;
 	private static final int PHOTO_COLUMN_POSITION = 2;
@@ -22,7 +25,7 @@ class ContactModel {
 	private final Uri photoUri;
 
 	@ColorInt
-	private int associatedColor;
+	private int associatedColor = NO_COLOR;
 
 	private ContactModel(final Context context, long id, String name, final String photoUri) {
 		this.id = id;
@@ -54,7 +57,9 @@ class ContactModel {
 	}
 
 	void setAssociatedColor(@ColorInt int color) {
-		this.associatedColor = color;
+		if (associatedColor == NO_COLOR) {
+			this.associatedColor = color;
+		}
 	}
 
 	static ContactModel build(Context context, Cursor cursor) {

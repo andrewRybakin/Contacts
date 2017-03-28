@@ -64,9 +64,10 @@ public class ContactDetailsLayout extends CoordinatorLayout {
 			super(itemView);
 		}
 
-		void bind(ContactDetailsModel.PhoneNumber phoneNumber) {
+		void bind(ContactDetailsModel.PhoneNumber phoneNumber, int associatedColor) {
 			CharSequence phoneTypeString = ContactsContract.CommonDataKinds.Phone.getTypeLabel(itemView.getResources(), phoneNumber.getType(), "Other");
 			((PhoneNumberView) itemView).setData(phoneTypeString.toString(), phoneNumber.getNumber());
+			((PhoneNumberView) itemView).setAssociatedColor(associatedColor);
 		}
 	}
 }
