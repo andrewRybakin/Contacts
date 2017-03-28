@@ -8,47 +8,45 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.support.annotation.ColorInt;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
-import android.support.v7.widget.AppCompatImageView;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
-import android.view.View;
+import android.util.Log;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import com.mercdev.rybakin.contacts.BaseActivity;
 import com.mercdev.rybakin.contacts.R;
 import com.mercdev.rybakin.contacts.utils.RecyclerViewCursorAdapter;
-import com.squareup.picasso.Picasso;
 
 public class DetailsActivity extends BaseActivity {
+	private static final String TAG = "DetailsActivity";
+
 	private static final String CONTACT_ID_EXTRA = "contactId";
+	private static final String CONTACT_ASSOCIATED_COLOR_EXTRA = "associatedExtra";
 	private static final int CONTACT_LOADER_ID = 0;
 	private static final int PHONE_NUMBERS_LOADER_ID = 1;
 	private static final long CONTACT_NO_ID = -1;
 
 	private final ContactLoaderCallback loaderCallback = new ContactLoaderCallback();
 
+	private ContactDetailsLayout layout;
+
+	private PhoneNumbersAdapter adapter;
 	private long contactId;
 
-	private TextView nameView;
-	private AppCompatImageView contactPhotoView;
-	private PhoneNumbersAdapter adapter;
-
+	@SuppressWarnings("deprecation")
 	@Override
 	protected void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.a_details);
-		Toolbar toolbar = (Toolbar) findViewById(R.id.details_toolbar);
-		setSupportActionBar(toolbar);
-		if (getSupportActionBar() != null) {
-			getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-		}
-
-		nameView = (TextView) findViewById(R.id.details_name);
-		contactPhotoView = (AppCompatImageView) findViewById(R.id.details_photo);
+		int associatedColor = getIntent().getIntExtra(CONTACT_ASSOCIATED_COLOR_EXTRA, getResources().getColor(R.color.colorPrimary));
 		adapter = new PhoneNumbersAdapter();
+
+		getWindow().setStatusBarColor(associatedColor);
+		layout = (ContactDetailsLayout) findViewById(R.id.details_layout);
+		layout.setAssociatedColor(associatedColor);
+		layout.setPhoneNumbersAdapter(adapter);
 
 		((RecyclerView) findViewById(R.id.details_phone_numbers)).setAdapter(adapter);
 	}
@@ -58,18 +56,16 @@ public class DetailsActivity extends BaseActivity {
 		contactId = getIntent().getLongExtra(CONTACT_ID_EXTRA, CONTACT_NO_ID);
 		if (contactId != CONTACT_NO_ID) {
 			initContactLoader();
+		} else {
+			Log.d(TAG, "onPermissionGranted: There's no contact id specified to show.");
+			//TODO show error placeholder
 		}
 	}
 
 	@Override
 	protected void onPermissionDeclined() {
 		Snackbar.make(findViewById(R.id.contacts_list), R.string.no_permissions, Snackbar.LENGTH_INDEFINITE)
-				.setAction(R.string.no_permission_settings, new View.OnClickListener() {
-					@Override
-					public void onClick(View view) {
-						openPermissionsSettings();
-					}
-				}).show();
+				.setAction(R.string.no_permission_settings, view -> openPermissionsSettings()).show();
 	}
 
 	@Override
@@ -96,11 +92,7 @@ public class DetailsActivity extends BaseActivity {
 	}
 
 	private void updateContact(ContactDetailsModel model) {
-		nameView.setText(model.getName());
-		Picasso.with(contactPhotoView.getContext())
-				.load(model.getPhotoUri())
-				.placeholder(R.drawable.account)
-				.into(contactPhotoView);
+		layout.setContact(model);
 		if (model.isHasPhoneNumber()) {
 			initPhoneNumbersLoader();
 		}
@@ -147,33 +139,22 @@ public class DetailsActivity extends BaseActivity {
 		}
 	}
 
-	public static void startMe(Context context, long contactId) {
-		Intent intent = new Intent(context, DetailsActivity.class);
-		intent.putExtra(CONTACT_ID_EXTRA, contactId);
-		context.startActivity(intent);
-	}
-
-	private class PhoneNumbersAdapter extends RecyclerViewCursorAdapter<PhoneNumberViewHolder> {
-
+	private class PhoneNumbersAdapter extends RecyclerViewCursorAdapter<ContactDetailsLayout.PhoneNumberViewHolder> {
 		@Override
-		public PhoneNumberViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-			return new PhoneNumberViewHolder(new PhoneNumberView(DetailsActivity.this));
+		public ContactDetailsLayout.PhoneNumberViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+			return new ContactDetailsLayout.PhoneNumberViewHolder(new PhoneNumberView(DetailsActivity.this));
 		}
 
 		@Override
-		protected void onBindViewHolder(PhoneNumberViewHolder holder, Cursor cursor) {
+		protected void onBindViewHolder(ContactDetailsLayout.PhoneNumberViewHolder holder, Cursor cursor) {
 			holder.bind(ContactDetailsModel.PhoneNumber.build(cursor));
 		}
 	}
 
-	private class PhoneNumberViewHolder extends RecyclerView.ViewHolder {
-		PhoneNumberViewHolder(View itemView) {
-			super(itemView);
-		}
-
-		void bind(ContactDetailsModel.PhoneNumber phoneNumber) {
-			CharSequence phoneTypeString = ContactsContract.CommonDataKinds.Phone.getTypeLabel(getResources(), phoneNumber.getType(), "Other");
-			((PhoneNumberView) itemView).setData(phoneTypeString.toString(), phoneNumber.getNumber());
-		}
+	public static void startMe(Context context, long contactId, @ColorInt int associatedColor) {
+		Intent intent = new Intent(context, DetailsActivity.class);
+		intent.putExtra(CONTACT_ID_EXTRA, contactId);
+		intent.putExtra(CONTACT_ASSOCIATED_COLOR_EXTRA, associatedColor);
+		context.startActivity(intent);
 	}
 }

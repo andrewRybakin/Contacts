@@ -20,10 +20,11 @@ class ContactModel {
 	private final long id;
 	private final String name;
 	private final Uri photoUri;
-	@ColorInt
-	private final int associatedColor;
 
-	private ContactModel(Context context, long id, String name, String photoUri) {
+	@ColorInt
+	private int associatedColor;
+
+	private ContactModel(final Context context, long id, String name, final String photoUri) {
 		this.id = id;
 		this.name = name;
 		if (photoUri != null) {
@@ -50,6 +51,10 @@ class ContactModel {
 	@ColorInt
 	int getAssociatedColor() {
 		return associatedColor;
+	}
+
+	void setAssociatedColor(@ColorInt int color) {
+		this.associatedColor = color;
 	}
 
 	static ContactModel build(Context context, Cursor cursor) {

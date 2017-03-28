@@ -3,4 +3,5 @@
 	<dimen name="photo_thumbnail_size">50dp</dimen>
 	<dimen name="content_inset_start">24dp</dimen>
 	<dimen name="content_inset_end">16dp</dimen>
+	<dimen name="details_appbar_height">350dp</dimen>
 </resources>

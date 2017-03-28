@@ -41,12 +41,7 @@ public class ContactsListActivity extends BaseActivity {
 	@Override
 	protected void onPermissionDeclined() {
 		Snackbar.make(findViewById(R.id.contacts_list), R.string.no_permissions, Snackbar.LENGTH_INDEFINITE)
-				.setAction(R.string.no_permission_settings, new View.OnClickListener() {
-					@Override
-					public void onClick(View view) {
-						openPermissionsSettings();
-					}
-				}).show();
+				.setAction(R.string.no_permission_settings, view -> openPermissionsSettings()).show();
 	}
 
 	@Override
@@ -111,12 +106,7 @@ public class ContactsListActivity extends BaseActivity {
 		void bind(final ContactModel contact) {
 			if (itemView instanceof ContactView) {
 				((ContactView) itemView).setContact(contact);
-				itemView.setOnClickListener(new View.OnClickListener() {
-					@Override
-					public void onClick(View view) {
-						DetailsActivity.startMe(ContactsListActivity.this, contact.getId());
-					}
-				});
+				itemView.setOnClickListener(view -> DetailsActivity.startMe(ContactsListActivity.this, contact.getId(), contact.getAssociatedColor()));
 			}
 		}
 	}

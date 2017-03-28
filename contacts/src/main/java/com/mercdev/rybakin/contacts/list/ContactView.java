@@ -36,7 +36,8 @@ public class ContactView extends RelativeLayout {
 		contactNameView.setText(contact.getName());
 		Picasso.with(contactPhotoView.getContext())
 				.load(contact.getPhotoUri())
-				.placeholder(R.drawable.contacts_placeholder)
+				.placeholder(R.drawable.contact_thumbnail_placeholder)
+				.transform(new DetectAssociatedColorTransform(contact))
 				.into(contactPhotoView);
 		contactPhotoView.setAssociatedColor(contact.getAssociatedColor());
 	}
