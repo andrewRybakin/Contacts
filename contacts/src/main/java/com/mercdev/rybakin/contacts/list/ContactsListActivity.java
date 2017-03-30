@@ -4,11 +4,13 @@ import android.app.LoaderManager;
 import android.content.CursorLoader;
 import android.content.Loader;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.SparseIntArray;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -52,8 +54,8 @@ public class ContactsListActivity extends BaseActivity {
 
 	private void initContactLoader() {
 		Bundle loaderArgs = new Bundle();
-		loaderArgs.putStringArray(ContactsLoaderCallback.PROJECTION_KEY, ContactModel.FIELDS);
-		loaderArgs.putString(ContactsLoaderCallback.SORT_ORDER_KEY, ContactModel.FIELD_TO_SORT_BY);
+		loaderArgs.putStringArray(ContactsLoaderCallback.PROJECTION_KEY, ContactUtils.FIELDS);
+		loaderArgs.putString(ContactsLoaderCallback.SORT_ORDER_KEY, ContactUtils.FIELD_TO_SORT_BY);
 		getLoaderManager().initLoader(CONTACTS_LOADER_ID, loaderArgs, new ContactsLoaderCallback());
 	}
 
@@ -87,6 +89,8 @@ public class ContactsListActivity extends BaseActivity {
 	}
 
 	private class ContactsAdapter extends RecyclerViewCursorAdapter<ContactViewHolder> {
+		private final SparseIntArray colors = new SparseIntArray();
+
 		@Override
 		public ContactViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 			return new ContactViewHolder(new ContactView(ContactsListActivity.this));
@@ -94,7 +98,18 @@ public class ContactsListActivity extends BaseActivity {
 
 		@Override
 		protected void onBindViewHolder(ContactViewHolder holder, Cursor cursor) {
-			holder.bind(ContactModel.build(ContactsListActivity.this, cursor));
+			long id = ContactUtils.getId(cursor);
+			String name = ContactUtils.getName(cursor);
+			Uri photoUri = ContactUtils.getPhotoUri(cursor);
+
+			int position = cursor.getPosition();
+			int color = colors.get(position, ContactUtils.NO_ASSOCIATED_COLOR);
+			if (color == ContactUtils.NO_ASSOCIATED_COLOR) {
+				color = ContactUtils.getRandomAssociatedColor(ContactsListActivity.this);
+				colors.put(position, color);
+			}
+
+			holder.bind(id, name, photoUri, color);
 		}
 	}
 
@@ -103,10 +118,13 @@ public class ContactsListActivity extends BaseActivity {
 			super(itemView);
 		}
 
-		void bind(final ContactModel contact) {
+		void bind(long id, String name, Uri photoUri, int color) {
 			if (itemView instanceof ContactView) {
-				((ContactView) itemView).setContact(contact);
-				itemView.setOnClickListener(view -> DetailsActivity.startMe(ContactsListActivity.this, contact.getId(), contact.getAssociatedColor()));
+				ContactView contactView = ((ContactView) itemView);
+				contactView.setName(name);
+				contactView.setPhoto(photoUri);
+				contactView.setAssociatedColor(color);
+				itemView.setOnClickListener(view -> DetailsActivity.startMe(ContactsListActivity.this, id, color));
 			}
 		}
 	}

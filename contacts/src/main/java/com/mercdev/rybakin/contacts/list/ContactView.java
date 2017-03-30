@@ -1,6 +1,7 @@
 package com.mercdev.rybakin.contacts.list;
 
 import android.content.Context;
+import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.widget.RelativeLayout;
@@ -32,13 +33,18 @@ public class ContactView extends RelativeLayout {
 		contactPhotoView = (ContactPhotoThumbnailView) findViewById(R.id.contact_photo);
 	}
 
-	public void setContact(ContactModel contact) {
-		contactNameView.setText(contact.getName());
+	public void setName(String name) {
+		contactNameView.setText(name);
+	}
+
+	public void setPhoto(Uri photoUri) {
 		Picasso.with(contactPhotoView.getContext())
-				.load(contact.getPhotoUri())
+				.load(photoUri)
 				.placeholder(R.drawable.contact_thumbnail_placeholder)
-				.transform(new DetectAssociatedColorTransform(contact))
 				.into(contactPhotoView);
-		contactPhotoView.setAssociatedColor(contact.getAssociatedColor());
+	}
+
+	public void setAssociatedColor(int color) {
+		contactPhotoView.setAssociatedColor(color);
 	}
 }

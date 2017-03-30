@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.ImageView;
 
 import com.mercdev.rybakin.contacts.R;
+import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
 
 public class ContactDetailsLayout extends CoordinatorLayout {
@@ -52,6 +53,16 @@ public class ContactDetailsLayout extends CoordinatorLayout {
 		Picasso.with(getContext())
 				.load(model.getPhotoUri())
 				.placeholder(R.drawable.contact_placeholder)
+				.into(contactPhotoView);
+	}
+
+	public void setContact(ContactDetailsModel model, DetectAssociatedColorTransform.OnAssociatedColorDetected detectionEndListener) {
+		toolbar.setTitle(model.getName());
+		Picasso.with(getContext())
+				.load(model.getPhotoUri())
+				.placeholder(R.drawable.contact_placeholder)
+				.transform(new DetectAssociatedColorTransform(detectionEndListener))
+				.memoryPolicy(MemoryPolicy.NO_CACHE)
 				.into(contactPhotoView);
 	}
 

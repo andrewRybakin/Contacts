@@ -6,6 +6,8 @@ import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
+import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.support.annotation.ColorInt;
@@ -41,12 +43,11 @@ public class DetailsActivity extends BaseActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.a_details);
 		int associatedColor = getIntent().getIntExtra(CONTACT_ASSOCIATED_COLOR_EXTRA, getResources().getColor(R.color.colorPrimary));
-		adapter = new PhoneNumbersAdapter(associatedColor);
+		adapter = new PhoneNumbersAdapter();
 
-		getWindow().setStatusBarColor(associatedColor);
 		layout = (ContactDetailsLayout) findViewById(R.id.details_layout);
-		layout.setAssociatedColor(associatedColor);
 		layout.setPhoneNumbersAdapter(adapter);
+		setAssociatedColor(associatedColor);
 
 		((RecyclerView) findViewById(R.id.details_phone_numbers)).setAdapter(adapter);
 	}
@@ -75,6 +76,12 @@ public class DetailsActivity extends BaseActivity {
 		getLoaderManager().destroyLoader(PHONE_NUMBERS_LOADER_ID);
 	}
 
+	private void setAssociatedColor(@ColorInt int color) {
+		getWindow().setStatusBarColor(color);
+		layout.setAssociatedColor(color);
+		adapter.setAssociatedColor(color);
+	}
+
 	private void initContactLoader() {
 		Bundle loaderArgs = new Bundle();
 		loaderArgs.putStringArray(ContactLoaderCallback.PROJECTION_KEY, ContactDetailsModel.CONTACT_PROJECTION);
@@ -92,7 +99,16 @@ public class DetailsActivity extends BaseActivity {
 	}
 
 	private void updateContact(ContactDetailsModel model) {
-		layout.setContact(model);
+		if (model.getPhotoUri() != Uri.EMPTY) {
+			layout.setContact(model, new DetectAssociatedColorTransform.OnAssociatedColorDetected() {
+				@Override
+				void onAssociatedColorDetected(int color) {
+					setAssociatedColor(color);
+				}
+			});
+		} else {
+			layout.setContact(model);
+		}
 		if (model.isHasPhoneNumber()) {
 			initPhoneNumbersLoader();
 		}
@@ -140,11 +156,8 @@ public class DetailsActivity extends BaseActivity {
 	}
 
 	private class PhoneNumbersAdapter extends RecyclerViewCursorAdapter<ContactDetailsLayout.PhoneNumberViewHolder> {
-		private final int associatedColor;
-
-		PhoneNumbersAdapter(int associatedColor) {
-			this.associatedColor = associatedColor;
-		}
+		@ColorInt
+		private int associatedColor = Color.TRANSPARENT;
 
 		@Override
 		public ContactDetailsLayout.PhoneNumberViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -154,6 +167,11 @@ public class DetailsActivity extends BaseActivity {
 		@Override
 		protected void onBindViewHolder(ContactDetailsLayout.PhoneNumberViewHolder holder, Cursor cursor) {
 			holder.bind(ContactDetailsModel.PhoneNumber.build(cursor), associatedColor);
+		}
+
+		void setAssociatedColor(int color) {
+			associatedColor = color;
+			notifyDataSetChanged();
 		}
 	}
 
