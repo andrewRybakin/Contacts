@@ -48,19 +48,16 @@ public class ContactDetailsLayout extends CoordinatorLayout {
 		collapsing.setBackgroundColor(color);
 	}
 
+	@SuppressWarnings("deprecation")
 	public void setContact(ContactDetailsModel model) {
 		toolbar.setTitle(model.getName());
-		Picasso.with(getContext())
-				.load(model.getPhotoUri())
-				.placeholder(R.drawable.contact_placeholder)
-				.into(contactPhotoView);
+		contactPhotoView.setImageDrawable(getResources().getDrawable(R.drawable.contact_placeholder));
 	}
 
 	public void setContact(ContactDetailsModel model, DetectAssociatedColorTransform.OnAssociatedColorDetected detectionEndListener) {
 		toolbar.setTitle(model.getName());
 		Picasso.with(getContext())
 				.load(model.getPhotoUri())
-				.placeholder(R.drawable.contact_placeholder)
 				.transform(new DetectAssociatedColorTransform(detectionEndListener))
 				.memoryPolicy(MemoryPolicy.NO_CACHE)
 				.into(contactPhotoView);

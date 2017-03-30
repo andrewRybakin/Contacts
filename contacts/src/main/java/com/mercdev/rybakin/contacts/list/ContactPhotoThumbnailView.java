@@ -2,6 +2,7 @@ package com.mercdev.rybakin.contacts.list;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
@@ -15,7 +16,7 @@ import com.mercdev.rybakin.contacts.R;
 
 public class ContactPhotoThumbnailView extends AppCompatImageView {
 	@ColorInt
-	private int associatedColor = 0xFF000000;
+	private int associatedColor = Color.TRANSPARENT;
 
 	public ContactPhotoThumbnailView(Context context) {
 		this(context, null);

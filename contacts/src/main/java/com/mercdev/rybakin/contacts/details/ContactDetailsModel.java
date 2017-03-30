@@ -9,24 +9,20 @@ class ContactDetailsModel {
 			ContactsContract.Contacts._ID,
 			ContactsContract.Contacts.DISPLAY_NAME,
 			ContactsContract.Contacts.PHOTO_URI,
-			ContactsContract.Contacts.HAS_PHONE_NUMBER
 	};
 
 	private static final int ID_COLUMN_POSITION = 0;
 	private static final int NAME_COLUMN_POSITION = 1;
 	private static final int PHOTO_COLUMN_POSITION = 2;
-	private static final int HAS_PHONE_NUMBER_COLUMN_POSITION = 3;
 
 	private final long id;
 	private final String name;
 	private final Uri photoUri;
-	private final boolean hasPhoneNumber;
 
-	private ContactDetailsModel(long id, String name, Uri photoUri, boolean hasPhoneNumber) {
+	private ContactDetailsModel(long id, String name, Uri photoUri) {
 		this.id = id;
 		this.name = name;
 		this.photoUri = photoUri;
-		this.hasPhoneNumber = hasPhoneNumber;
 	}
 
 	public long getId() {
@@ -39,10 +35,6 @@ class ContactDetailsModel {
 
 	Uri getPhotoUri() {
 		return photoUri;
-	}
-
-	boolean isHasPhoneNumber() {
-		return hasPhoneNumber;
 	}
 
 	static ContactDetailsModel build(Cursor cursor) {
@@ -60,8 +52,7 @@ class ContactDetailsModel {
 		} else {
 			photoUri = Uri.EMPTY;
 		}
-		boolean hasPhoneNumber = cursor.getInt(columns[HAS_PHONE_NUMBER_COLUMN_POSITION]) != 0;
-		return new ContactDetailsModel(id, name, photoUri, hasPhoneNumber);
+		return new ContactDetailsModel(id, name, photoUri);
 	}
 
 	static class PhoneNumber {

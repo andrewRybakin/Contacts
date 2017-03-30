@@ -14,12 +14,15 @@ import android.support.annotation.ColorInt;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
+import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 
 import com.mercdev.rybakin.contacts.BaseActivity;
 import com.mercdev.rybakin.contacts.R;
 import com.mercdev.rybakin.contacts.utils.RecyclerViewCursorAdapter;
+
+import static android.view.View.GONE;
 
 public class DetailsActivity extends BaseActivity {
 	private static final String TAG = "DetailsActivity";
@@ -33,9 +36,11 @@ public class DetailsActivity extends BaseActivity {
 	private final ContactLoaderCallback loaderCallback = new ContactLoaderCallback();
 
 	private ContactDetailsLayout layout;
+	private ProgressBar progressView;
 
 	private PhoneNumbersAdapter adapter;
 	private long contactId;
+	private long animationDuration;
 
 	@SuppressWarnings("deprecation")
 	@Override
@@ -45,11 +50,17 @@ public class DetailsActivity extends BaseActivity {
 		int associatedColor = getIntent().getIntExtra(CONTACT_ASSOCIATED_COLOR_EXTRA, getResources().getColor(R.color.colorPrimary));
 		adapter = new PhoneNumbersAdapter();
 
+		progressView = (ProgressBar) findViewById(R.id.progress_placeholder);
+
 		layout = (ContactDetailsLayout) findViewById(R.id.details_layout);
 		layout.setPhoneNumbersAdapter(adapter);
 		setAssociatedColor(associatedColor);
 
 		((RecyclerView) findViewById(R.id.details_phone_numbers)).setAdapter(adapter);
+
+		animationDuration = getResources().getInteger(android.R.integer.config_mediumAnimTime);
+		hideLayout();
+		showProgress();
 	}
 
 	@Override
@@ -57,9 +68,9 @@ public class DetailsActivity extends BaseActivity {
 		contactId = getIntent().getLongExtra(CONTACT_ID_EXTRA, CONTACT_NO_ID);
 		if (contactId != CONTACT_NO_ID) {
 			initContactLoader();
+			initPhoneNumbersLoader();
 		} else {
-			Log.d(TAG, "onPermissionGranted: There's no contact id specified to show.");
-			//TODO show error placeholder
+			Snackbar.make(findViewById(R.id.contacts_list), R.string.no_permissions, Snackbar.LENGTH_INDEFINITE).show();
 		}
 	}
 
@@ -104,13 +115,56 @@ public class DetailsActivity extends BaseActivity {
 				@Override
 				void onAssociatedColorDetected(int color) {
 					setAssociatedColor(color);
+					hideProgress();
+					showLayout();
 				}
 			});
 		} else {
 			layout.setContact(model);
+			hideProgress();
+			showLayout();
 		}
-		if (model.isHasPhoneNumber()) {
-			initPhoneNumbersLoader();
+	}
+
+	private void showLayout() {
+		if (layout.getVisibility() != View.VISIBLE) {
+			layout.setAlpha(0);
+			layout.setVisibility(View.VISIBLE);
+			layout.animate()
+					.alpha(1)
+					.setDuration(animationDuration)
+					.start();
+		}
+	}
+
+	private void hideLayout() {
+		if (layout.getVisibility() == View.VISIBLE) {
+			layout.animate()
+					.alpha(0)
+					.setDuration(animationDuration)
+					.withEndAction(() -> layout.setVisibility(GONE))
+					.start();
+		}
+	}
+
+	private void showProgress() {
+		if (progressView.getVisibility() != View.VISIBLE) {
+			progressView.setAlpha(0);
+			progressView.setVisibility(View.VISIBLE);
+			progressView.animate()
+					.alpha(1)
+					.setDuration(animationDuration)
+					.start();
+		}
+	}
+
+	private void hideProgress() {
+		if (progressView.getVisibility() == View.VISIBLE) {
+			progressView.animate()
+					.alpha(0)
+					.setDuration(animationDuration)
+					.withEndAction(() -> progressView.setVisibility(GONE))
+					.start();
 		}
 	}
 

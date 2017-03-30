@@ -32,7 +32,7 @@
 		<item name="android:paddingBottom">2dp</item>
 		<item name="android:paddingStart">@dimen/content_inset_start</item>
 		<item name="android:paddingEnd">@dimen/content_inset_end</item>
-		<item name="android:background">@drawable/contact_background</item>
+		<item name="android:foreground">?selectableItemBackground</item>
 	</style>
 
 	<style name="Contacts.ContactPhotoThumbnailView">

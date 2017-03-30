@@ -16,5 +16,8 @@
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
 		android:layout_below="@+id/contacts_toolbar"
+		android:clipToPadding="false"
+		android:paddingBottom="@dimen/recycler_content_inset"
+		android:paddingTop="@dimen/recycler_content_inset"
 		app:layoutManager="LinearLayoutManager" />
 </RelativeLayout>

@@ -2,5 +2,6 @@
 	<string name="app_name">Contacts</string>
 	<string name="details">Details</string>
 	<string name="no_permissions">No granted acces to contacts list!</string>
+	<string name="no_contact">There\'s nothing to show!</string>
 	<string name="no_permission_settings">Open settings</string>
 </resources>
