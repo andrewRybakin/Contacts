@@ -1,68 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
-<merge xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v7.widget.CardView
+	android:id="@+id/phone_card"
+	xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
-	tools:parentTag="FrameLayout">
+	android:layout_marginBottom="@dimen/cardview_inset_shadow"
+	android:layout_marginEnd="@dimen/recycler_content_inset"
+	android:layout_marginStart="@dimen/recycler_content_inset"
+	android:layout_marginTop="@dimen/cardview_inset_shadow"
+	tools:layout_marginTop="@dimen/recycler_content_inset">
 
-	<android.support.v7.widget.CardView
-		android:id="@+id/phone_card"
+	<RelativeLayout
 		android:layout_width="match_parent"
-		android:layout_height="wrap_content"
-		android:layout_marginBottom="@dimen/cardview_inset_shadow"
-		android:layout_marginEnd="@dimen/recycler_content_inset"
-		android:layout_marginStart="@dimen/recycler_content_inset"
-		android:layout_marginTop="@dimen/cardview_inset_shadow">
+		android:layout_height="match_parent">
 
-		<RelativeLayout
+		<ImageView
+			android:id="@+id/phone"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_centerVertical="true"
+			android:layout_marginEnd="@dimen/cardview_content_inset"
+			android:layout_marginStart="@dimen/cardview_content_inset"
+			android:src="@drawable/phone"
+			tools:ignore="ContentDescription" />
+
+		<LinearLayout
+			android:id="@+id/phone_numbers_layout"
 			android:layout_width="match_parent"
-			android:layout_height="match_parent">
+			android:layout_height="wrap_content"
+			android:layout_marginBottom="@dimen/cardview_content_inset"
+			android:layout_marginTop="@dimen/cardview_content_inset"
+			android:layout_toEndOf="@+id/phone"
+			android:layout_toStartOf="@+id/phone_message"
+			android:gravity="center"
+			android:orientation="vertical">
 
-			<ImageView
-				android:id="@+id/phone"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:layout_centerVertical="true"
-				android:layout_marginEnd="@dimen/cardview_content_inset"
-				android:layout_marginStart="@dimen/cardview_content_inset"
-				android:src="@drawable/phone"
-				tools:ignore="ContentDescription" />
-
-			<LinearLayout
-				android:id="@+id/phone_numbers_layout"
+			<TextView
+				android:id="@+id/phone_number"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
-				android:layout_marginBottom="@dimen/cardview_content_inset"
-				android:layout_marginTop="@dimen/cardview_content_inset"
-				android:layout_toEndOf="@+id/phone"
-				android:layout_toStartOf="@+id/phone_message"
-				android:gravity="center"
-				android:orientation="vertical">
+				android:layout_marginBottom="6dp"
+				android:textAppearance="?phoneNumberTextAppearance"
+				tools:text="+7 (917) 030 09 81" />
 
-				<TextView
-					android:id="@+id/phone_number"
-					android:layout_width="match_parent"
-					android:layout_height="wrap_content"
-					android:layout_marginBottom="6dp"
-					android:textAppearance="?phoneNumberTextAppearance"
-					tools:text="+7 (917) 030 09 81" />
-
-				<TextView
-					android:id="@+id/phone_number_type"
-					android:layout_width="match_parent"
-					android:layout_height="wrap_content"
-					tools:text="Mobile" />
-			</LinearLayout>
-
-			<ImageView
-				android:id="@+id/phone_message"
-				android:layout_width="wrap_content"
+			<TextView
+				android:id="@+id/phone_number_type"
+				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
-				android:layout_alignParentEnd="true"
-				android:layout_centerVertical="true"
-				android:padding="@dimen/cardview_content_inset"
-				android:src="@drawable/message"
-				tools:ignore="ContentDescription" />
-		</RelativeLayout>
-	</android.support.v7.widget.CardView>
-</merge>
+				tools:text="Mobile" />
+		</LinearLayout>
+
+		<ImageView
+			android:id="@+id/phone_message"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_alignParentEnd="true"
+			android:layout_centerVertical="true"
+			android:padding="@dimen/cardview_content_inset"
+			android:src="@drawable/message"
+			tools:ignore="ContentDescription" />
+	</RelativeLayout>
+</android.support.v7.widget.CardView>

@@ -8,13 +8,10 @@ import android.net.Uri;
 import android.support.annotation.ColorInt;
 import android.support.v4.graphics.ColorUtils;
 import android.support.v7.widget.CardView;
-import android.telephony.PhoneNumberUtils;
 import android.util.AttributeSet;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
-
-import java.util.Locale;
 
 import com.mercdev.rybakin.contacts.R;
 
@@ -49,7 +46,7 @@ public class PhoneNumberView extends FrameLayout {
 
 	public void setData(String phoneType, final String phoneNumber) {
 		phoneTypeView.setText(phoneType);
-		phoneNumberView.setText(PhoneNumberUtils.formatNumber(phoneNumber, Locale.getDefault().getISO3Country()));
+		phoneNumberView.setText(phoneNumber);
 		setOnClickListener(view -> {
 			Intent intent = new Intent(Intent.ACTION_DIAL);
 			intent.setData(Uri.parse("tel:" + phoneNumber));

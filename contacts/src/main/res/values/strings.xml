@@ -1,7 +1,8 @@
 <resources>
 	<string name="app_name">Contacts</string>
 	<string name="details">Details</string>
-	<string name="no_permissions">No granted acces to contacts list!</string>
-	<string name="no_contact">There\'s nothing to show!</string>
+	<string name="no_permissions">No granted access to contacts list!</string>
+	<string name="no_contact">Specified contact couldn\'t be found!</string>
 	<string name="no_permission_settings">Open settings</string>
+	<string name="error">An Unexpected error occurred. Try again later.</string>
 </resources>

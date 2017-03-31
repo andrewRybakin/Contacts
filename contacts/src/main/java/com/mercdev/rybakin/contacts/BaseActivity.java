@@ -13,8 +13,9 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 
 public abstract class BaseActivity extends AppCompatActivity {
-
 	private static final int CONTACTS_PERMISSION_REQUEST_CODE = 0;
+
+	private boolean permissionsGranted;
 
 	@Override
 	protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -22,19 +23,15 @@ public abstract class BaseActivity extends AppCompatActivity {
 		if (checkContactsPermission()) {
 			ActivityCompat.requestPermissions(this, new String[] { Manifest.permission.READ_CONTACTS }, CONTACTS_PERMISSION_REQUEST_CODE);
 		} else {
-			onPermissionGranted();
+			permissionsGranted = true;
 		}
 	}
 
 	@Override
 	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-		if (requestCode == CONTACTS_PERMISSION_REQUEST_CODE && grantResults.length > 0
-				&& grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-			onPermissionGranted();
-		} else {
-			onPermissionDeclined();
-		}
+		permissionsGranted = (requestCode == CONTACTS_PERMISSION_REQUEST_CODE && grantResults.length > 0
+				&& grantResults[0] == PackageManager.PERMISSION_GRANTED);
 	}
 
 	protected void openPermissionsSettings() {
@@ -48,9 +45,9 @@ public abstract class BaseActivity extends AppCompatActivity {
 		startActivity(i);
 	}
 
-	protected abstract void onPermissionGranted();
-
-	protected abstract void onPermissionDeclined();
+	protected boolean isPermissionsGranted() {
+		return permissionsGranted;
+	}
 
 	private boolean checkContactsPermission() {
 		return ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED;

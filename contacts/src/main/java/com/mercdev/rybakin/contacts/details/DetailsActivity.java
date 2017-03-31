@@ -1,11 +1,10 @@
 package com.mercdev.rybakin.contacts.details;
 
-import android.app.LoaderManager;
+import android.content.ContentResolver;
 import android.content.Context;
-import android.content.CursorLoader;
 import android.content.Intent;
-import android.content.Loader;
 import android.database.Cursor;
+import android.database.DataSetObserver;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -13,105 +12,119 @@ import android.provider.ContactsContract;
 import android.support.annotation.ColorInt;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ProgressBar;
+
+import java.util.List;
 
 import com.mercdev.rybakin.contacts.BaseActivity;
 import com.mercdev.rybakin.contacts.R;
-import com.mercdev.rybakin.contacts.utils.RecyclerViewCursorAdapter;
+import com.mercdev.rybakin.contacts.utils.ContactUtils;
 
 import static android.view.View.GONE;
+import static com.mercdev.rybakin.contacts.utils.ContactUtils.CONTACT_DETAILS_PROJECTION;
+import static com.mercdev.rybakin.contacts.utils.ContactUtils.PHONE_NUMBERS_PROJECTION;
 
 public class DetailsActivity extends BaseActivity {
-	private static final String TAG = "DetailsActivity";
-
 	private static final String CONTACT_ID_EXTRA = "contactId";
 	private static final String CONTACT_ASSOCIATED_COLOR_EXTRA = "associatedExtra";
-	private static final int CONTACT_LOADER_ID = 0;
-	private static final int PHONE_NUMBERS_LOADER_ID = 1;
 	private static final long CONTACT_NO_ID = -1;
 
-	private final ContactLoaderCallback loaderCallback = new ContactLoaderCallback();
+	private final DataSetObserver contactObserver = new DataSetObserver() {
+		@Override
+		public void onChanged() {
+			super.onChanged();
+			updateContact();
+		}
+
+		@Override
+		public void onInvalidated() {
+			super.onInvalidated();
+			hideLayout();
+			hideProgress();
+			Snackbar.make(layout, R.string.error, Snackbar.LENGTH_INDEFINITE).show();
+		}
+	};
+
+	private Cursor contactCursor;
+	private Cursor phoneNumbersCursor;
 
 	private ContactDetailsLayout layout;
 	private ProgressBar progressView;
 
-	private PhoneNumbersAdapter adapter;
 	private long contactId;
 	private long animationDuration;
 
-	@SuppressWarnings("deprecation")
 	@Override
 	protected void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.a_details);
-		int associatedColor = getIntent().getIntExtra(CONTACT_ASSOCIATED_COLOR_EXTRA, getResources().getColor(R.color.colorPrimary));
-		adapter = new PhoneNumbersAdapter();
+		getWindow().setStatusBarColor(Color.TRANSPARENT);
 
 		progressView = (ProgressBar) findViewById(R.id.progress_placeholder);
 
 		layout = (ContactDetailsLayout) findViewById(R.id.details_layout);
-		layout.setPhoneNumbersAdapter(adapter);
-		setAssociatedColor(associatedColor);
-
-		((RecyclerView) findViewById(R.id.details_phone_numbers)).setAdapter(adapter);
 
 		animationDuration = getResources().getInteger(android.R.integer.config_mediumAnimTime);
-		hideLayout();
-		showProgress();
-	}
-
-	@Override
-	protected void onPermissionGranted() {
-		contactId = getIntent().getLongExtra(CONTACT_ID_EXTRA, CONTACT_NO_ID);
-		if (contactId != CONTACT_NO_ID) {
-			initContactLoader();
-			initPhoneNumbersLoader();
+		if (isPermissionsGranted()) {
+			contactId = getIntent().getLongExtra(CONTACT_ID_EXTRA, CONTACT_NO_ID);
+			if (contactId != CONTACT_NO_ID) {
+				loadContactDetails();
+			} else {
+				Snackbar.make(layout, R.string.no_contact, Snackbar.LENGTH_INDEFINITE).show();
+			}
 		} else {
-			Snackbar.make(findViewById(R.id.contacts_list), R.string.no_permissions, Snackbar.LENGTH_INDEFINITE).show();
+			Snackbar.make(layout, R.string.no_permissions, Snackbar.LENGTH_INDEFINITE)
+					.setAction(R.string.no_permission_settings, view -> openPermissionsSettings()).show();
 		}
-	}
-
-	@Override
-	protected void onPermissionDeclined() {
-		Snackbar.make(findViewById(R.id.contacts_list), R.string.no_permissions, Snackbar.LENGTH_INDEFINITE)
-				.setAction(R.string.no_permission_settings, view -> openPermissionsSettings()).show();
 	}
 
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		getLoaderManager().destroyLoader(CONTACT_LOADER_ID);
-		getLoaderManager().destroyLoader(PHONE_NUMBERS_LOADER_ID);
+		if (contactCursor != null) {
+			contactCursor.unregisterDataSetObserver(contactObserver);
+			contactCursor.close();
+		}
+		if (phoneNumbersCursor != null) {
+			phoneNumbersCursor.unregisterDataSetObserver(contactObserver);
+			phoneNumbersCursor.close();
+		}
 	}
 
 	private void setAssociatedColor(@ColorInt int color) {
 		getWindow().setStatusBarColor(color);
 		layout.setAssociatedColor(color);
-		adapter.setAssociatedColor(color);
 	}
 
-	private void initContactLoader() {
-		Bundle loaderArgs = new Bundle();
-		loaderArgs.putStringArray(ContactLoaderCallback.PROJECTION_KEY, ContactDetailsModel.CONTACT_PROJECTION);
-		loaderArgs.putString(ContactLoaderCallback.SELECTION_KEY, ContactsContract.Contacts._ID + " = ?");
-		loaderArgs.putStringArray(ContactLoaderCallback.SELECTION_ARGS_KEY, new String[] { String.valueOf(contactId) });
-		getLoaderManager().initLoader(CONTACT_LOADER_ID, loaderArgs, loaderCallback);
+	private void loadContactDetails() {
+		hideLayout();
+		showProgress();
+		String selection = ContactsContract.Contacts._ID + " = ?";
+		String[] selectionArgs = new String[] { String.valueOf(contactId) };
+		ContentResolver contentResolver = getContentResolver();
+		contactCursor = contentResolver.query(ContactsContract.Contacts.CONTENT_URI, CONTACT_DETAILS_PROJECTION, selection, selectionArgs, null);
+		if (contactCursor != null && contactCursor.moveToFirst()) {
+			contactCursor.registerDataSetObserver(contactObserver);
+			selection = ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?";
+			selectionArgs = new String[] { String.valueOf(contactId) };
+			phoneNumbersCursor = contentResolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, PHONE_NUMBERS_PROJECTION, selection, selectionArgs, null);
+			if (phoneNumbersCursor != null) {
+				phoneNumbersCursor.registerDataSetObserver(contactObserver);
+			}
+		}
+		updateContact();
 	}
 
-	private void initPhoneNumbersLoader() {
-		Bundle loaderArgs = new Bundle();
-		loaderArgs.putStringArray(ContactLoaderCallback.PROJECTION_KEY, ContactDetailsModel.PhoneNumber.PHONE_NUMBERS_PROJECTION);
-		loaderArgs.putString(ContactLoaderCallback.SELECTION_KEY, ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?");
-		loaderArgs.putStringArray(ContactLoaderCallback.SELECTION_ARGS_KEY, new String[] { String.valueOf(contactId) });
-		getLoaderManager().initLoader(PHONE_NUMBERS_LOADER_ID, loaderArgs, loaderCallback);
-	}
-
-	private void updateContact(ContactDetailsModel model) {
-		if (model.getPhotoUri() != Uri.EMPTY) {
-			layout.setContact(model, new DetectAssociatedColorTransform.OnAssociatedColorDetected() {
+	@SuppressWarnings("deprecation")
+	private void updateContact() {
+		String name = ContactUtils.getName(contactCursor);
+		Uri photoUri = ContactUtils.getPhotoUri(contactCursor);
+		List<ContactUtils.PhoneNumber> phoneNumbers = ContactUtils.getPhoneNumbers(phoneNumbersCursor);
+		layout.setContactName(name);
+		layout.setPhoneNumbers(phoneNumbers);
+		if (photoUri != Uri.EMPTY) {
+			layout.setContactPhoto(photoUri, new DetectAssociatedColorTransform.OnAssociatedColorDetected() {
 				@Override
 				void onAssociatedColorDetected(int color) {
 					setAssociatedColor(color);
@@ -120,7 +133,9 @@ public class DetailsActivity extends BaseActivity {
 				}
 			});
 		} else {
-			layout.setContact(model);
+			int associatedColor = getIntent().getIntExtra(CONTACT_ASSOCIATED_COLOR_EXTRA, getResources().getColor(R.color.colorPrimary));
+			setAssociatedColor(associatedColor);
+			layout.showPhotoPlaceholder();
 			hideProgress();
 			showLayout();
 		}
@@ -165,67 +180,6 @@ public class DetailsActivity extends BaseActivity {
 					.setDuration(animationDuration)
 					.withEndAction(() -> progressView.setVisibility(GONE))
 					.start();
-		}
-	}
-
-	private class ContactLoaderCallback implements LoaderManager.LoaderCallbacks<Cursor> {
-		static final String PROJECTION_KEY = "projection";
-		static final String SELECTION_KEY = "selection";
-		static final String SELECTION_ARGS_KEY = "selectionArgs";
-		static final String SORT_ORDER_KEY = "sortOrder";
-
-		@Override
-		public Loader<Cursor> onCreateLoader(int loaderId, Bundle args) {
-			String[] projection = args.getStringArray(PROJECTION_KEY);
-			String selection = args.getString(SELECTION_KEY);
-			String[] selectionArgs = args.getStringArray(SELECTION_ARGS_KEY);
-			String sortOrder = args.getString(SORT_ORDER_KEY);
-			switch (loaderId) {
-				case 0:
-					return new CursorLoader(DetailsActivity.this, ContactsContract.Contacts.CONTENT_URI, projection, selection, selectionArgs, sortOrder);
-				case 1:
-					return new CursorLoader(DetailsActivity.this, ContactsContract.CommonDataKinds.Phone.CONTENT_URI, projection, selection, selectionArgs, sortOrder);
-				default:
-					return null;
-			}
-		}
-
-		@Override
-		public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-			switch (loader.getId()) {
-				case 0:
-					updateContact(ContactDetailsModel.build(cursor));
-					break;
-				case 1:
-					adapter.swapCursor(cursor);
-					break;
-				default:
-			}
-		}
-
-		@Override
-		public void onLoaderReset(Loader<Cursor> loader) {
-			adapter.swapCursor(null);
-		}
-	}
-
-	private class PhoneNumbersAdapter extends RecyclerViewCursorAdapter<ContactDetailsLayout.PhoneNumberViewHolder> {
-		@ColorInt
-		private int associatedColor = Color.TRANSPARENT;
-
-		@Override
-		public ContactDetailsLayout.PhoneNumberViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-			return new ContactDetailsLayout.PhoneNumberViewHolder(new PhoneNumberView(DetailsActivity.this));
-		}
-
-		@Override
-		protected void onBindViewHolder(ContactDetailsLayout.PhoneNumberViewHolder holder, Cursor cursor) {
-			holder.bind(ContactDetailsModel.PhoneNumber.build(cursor), associatedColor);
-		}
-
-		void setAssociatedColor(int color) {
-			associatedColor = color;
-			notifyDataSetChanged();
 		}
 	}
 

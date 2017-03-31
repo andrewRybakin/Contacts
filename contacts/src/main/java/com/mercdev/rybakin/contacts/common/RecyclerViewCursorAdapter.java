@@ -1,4 +1,4 @@
-package com.mercdev.rybakin.contacts.utils;
+package com.mercdev.rybakin.contacts.common;
 
 import android.database.Cursor;
 import android.database.DataSetObserver;
@@ -36,30 +36,25 @@ public abstract class RecyclerViewCursorAdapter<VH extends RecyclerView.ViewHold
 	public void onBindViewHolder(VH holder, int position) {
 		if (!isDataValid) {
 			Log.w(TAG, "onBindViewHolder: The data is invalid! Cannot bind view");
-			return;
-		}
-		if (!cursor.moveToPosition(position)) {
+		} else if (!cursor.moveToPosition(position)) {
 			Log.w(TAG, "onBindViewHolder: Couldn't move the cursor! ViewHolder will not be bind");
-			return;
+		} else {
+			onBindViewHolder(holder, cursor);
 		}
-		onBindViewHolder(holder, cursor);
 	}
 
 	@Override
 	public int getItemCount() {
-		if (cursor != null && isDataValid) {
-			return cursor.getCount();
-		} else {
-			return 0;
-		}
+		return cursor != null && isDataValid ? cursor.getCount() : 0;
 	}
 
 	@Override
 	public long getItemId(int position) {
+		long itemId = RecyclerView.NO_ID;
 		if (cursor != null && isDataValid && cursor.moveToPosition(position)) {
-			return cursor.getLong(rowIDColumn);
+			itemId = cursor.getLong(rowIDColumn);
 		}
-		return RecyclerView.NO_ID;
+		return itemId;
 	}
 
 	public void swapCursor(Cursor newCursor) {
