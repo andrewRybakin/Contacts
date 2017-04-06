@@ -64,6 +64,9 @@ public class ContactUtils {
 		ArrayList<PhoneNumber> phoneNumbers = new ArrayList<>();
 		int typeColumn = cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.TYPE);
 		int numberColumn = cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NUMBER);
+		if (!cursor.isBeforeFirst()) {
+			cursor.moveToPosition(-1);
+		}
 		while (cursor.moveToNext()) {
 			int type = cursor.getInt(typeColumn);
 			String number = cursor.getString(numberColumn);

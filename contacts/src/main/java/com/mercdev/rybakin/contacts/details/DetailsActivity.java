@@ -3,11 +3,13 @@ package com.mercdev.rybakin.contacts.details;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.database.ContentObserver;
 import android.database.Cursor;
-import android.database.DataSetObserver;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.ContactsContract;
 import android.support.annotation.ColorInt;
 import android.support.annotation.Nullable;
@@ -30,19 +32,11 @@ public class DetailsActivity extends BaseActivity {
 	private static final String CONTACT_ASSOCIATED_COLOR_EXTRA = "associatedExtra";
 	private static final long CONTACT_NO_ID = -1;
 
-	private final DataSetObserver contactObserver = new DataSetObserver() {
+	private final ContentObserver contactObserver = new ContentObserver(new Handler(Looper.getMainLooper())) {
 		@Override
-		public void onChanged() {
-			super.onChanged();
+		public void onChange(boolean selfChange) {
+			super.onChange(selfChange);
 			updateContact();
-		}
-
-		@Override
-		public void onInvalidated() {
-			super.onInvalidated();
-			hideLayout();
-			hideProgress();
-			Snackbar.make(layout, R.string.error, Snackbar.LENGTH_INDEFINITE).show();
 		}
 	};
 
@@ -64,8 +58,18 @@ public class DetailsActivity extends BaseActivity {
 		progressView = (ProgressBar) findViewById(R.id.progress_placeholder);
 
 		layout = (ContactDetailsLayout) findViewById(R.id.details_layout);
+		setSupportActionBar(layout.getToolbar());
+		if (getSupportActionBar() != null) {
+			getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+			layout.getToolbar().setNavigationOnClickListener(view -> finish());
+		}
 
 		animationDuration = getResources().getInteger(android.R.integer.config_mediumAnimTime);
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
 		if (isPermissionsGranted()) {
 			contactId = getIntent().getLongExtra(CONTACT_ID_EXTRA, CONTACT_NO_ID);
 			if (contactId != CONTACT_NO_ID) {
@@ -80,14 +84,18 @@ public class DetailsActivity extends BaseActivity {
 	}
 
 	@Override
-	protected void onDestroy() {
-		super.onDestroy();
-		if (contactCursor != null) {
-			contactCursor.unregisterDataSetObserver(contactObserver);
+	protected void onPause() {
+		super.onPause();
+		closeCursors();
+	}
+
+	private void closeCursors() {
+		if (contactCursor != null && !contactCursor.isClosed()) {
+			contactCursor.unregisterContentObserver(contactObserver);
 			contactCursor.close();
 		}
-		if (phoneNumbersCursor != null) {
-			phoneNumbersCursor.unregisterDataSetObserver(contactObserver);
+		if (phoneNumbersCursor != null && !phoneNumbersCursor.isClosed()) {
+			phoneNumbersCursor.unregisterContentObserver(contactObserver);
 			phoneNumbersCursor.close();
 		}
 	}
@@ -103,14 +111,15 @@ public class DetailsActivity extends BaseActivity {
 		String selection = ContactsContract.Contacts._ID + " = ?";
 		String[] selectionArgs = new String[] { String.valueOf(contactId) };
 		ContentResolver contentResolver = getContentResolver();
+		closeCursors();
 		contactCursor = contentResolver.query(ContactsContract.Contacts.CONTENT_URI, CONTACT_DETAILS_PROJECTION, selection, selectionArgs, null);
 		if (contactCursor != null && contactCursor.moveToFirst()) {
-			contactCursor.registerDataSetObserver(contactObserver);
+			contactCursor.registerContentObserver(contactObserver);
 			selection = ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?";
 			selectionArgs = new String[] { String.valueOf(contactId) };
 			phoneNumbersCursor = contentResolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, PHONE_NUMBERS_PROJECTION, selection, selectionArgs, null);
 			if (phoneNumbersCursor != null) {
-				phoneNumbersCursor.registerDataSetObserver(contactObserver);
+				phoneNumbersCursor.registerContentObserver(contactObserver);
 			}
 		}
 		updateContact();
@@ -142,45 +151,41 @@ public class DetailsActivity extends BaseActivity {
 	}
 
 	private void showLayout() {
-		if (layout.getVisibility() != View.VISIBLE) {
-			layout.setAlpha(0);
-			layout.setVisibility(View.VISIBLE);
-			layout.animate()
-					.alpha(1)
-					.setDuration(animationDuration)
-					.start();
-		}
+		layout.animate().cancel();
+		layout.setAlpha(0);
+		layout.setVisibility(View.VISIBLE);
+		layout.animate()
+				.alpha(1)
+				.setDuration(animationDuration)
+				.start();
 	}
 
 	private void hideLayout() {
-		if (layout.getVisibility() == View.VISIBLE) {
-			layout.animate()
-					.alpha(0)
-					.setDuration(animationDuration)
-					.withEndAction(() -> layout.setVisibility(GONE))
-					.start();
-		}
+		layout.animate().cancel();
+		layout.animate()
+				.alpha(0)
+				.setDuration(animationDuration)
+				.withEndAction(() -> layout.setVisibility(GONE))
+				.start();
 	}
 
 	private void showProgress() {
-		if (progressView.getVisibility() != View.VISIBLE) {
-			progressView.setAlpha(0);
-			progressView.setVisibility(View.VISIBLE);
-			progressView.animate()
-					.alpha(1)
-					.setDuration(animationDuration)
-					.start();
-		}
+		progressView.animate().cancel();
+		progressView.setAlpha(0);
+		progressView.setVisibility(View.VISIBLE);
+		progressView.animate()
+				.alpha(1)
+				.setDuration(animationDuration)
+				.start();
 	}
 
 	private void hideProgress() {
-		if (progressView.getVisibility() == View.VISIBLE) {
-			progressView.animate()
-					.alpha(0)
-					.setDuration(animationDuration)
-					.withEndAction(() -> progressView.setVisibility(GONE))
-					.start();
-		}
+		progressView.animate().cancel();
+		progressView.animate()
+				.alpha(0)
+				.setDuration(animationDuration)
+				.withEndAction(() -> progressView.setVisibility(GONE))
+				.start();
 	}
 
 	public static void startMe(Context context, long contactId, @ColorInt int associatedColor) {

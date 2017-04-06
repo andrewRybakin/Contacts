@@ -46,6 +46,10 @@ public class ContactDetailsLayout extends CoordinatorLayout {
 		((RecyclerView) findViewById(R.id.details_phone_numbers)).setAdapter(phoneNumbersAdapter);
 	}
 
+	public Toolbar getToolbar() {
+		return toolbar;
+	}
+
 	public void setAssociatedColor(@ColorInt int color) {
 		collapsing.setContentScrimColor(color);
 		collapsing.setStatusBarScrimColor(color);
